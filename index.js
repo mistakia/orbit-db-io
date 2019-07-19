@@ -2,6 +2,13 @@ const CID = require('cids')
 const dagPB = require('ipld-dag-pb')
 const defaultBase = 'base58btc'
 
+const isLocal = (ipfs, cid) => new Promise((resolve, reject) => {
+  ipfs._repo.blocks.has(cid, (err, exists) => {
+    if (err) reject(err)
+    resolve(exists)
+  })
+})
+
 const cidifyString = (str) => {
   if (!str) {
     return str
@@ -48,7 +55,13 @@ const writePb = async (ipfs, obj, options) => {
   return res
 }
 
-const readPb = async (ipfs, cid) => {
+const readPb = async (ipfs, cid, options) => {
+  if (options.localResolve) {
+    const haveLocally = await isLocal(ipfs, cid)
+    if (!haveLocally) {
+      return
+    }
+  }
   const result = await ipfs.dag.get(cid)
   const dagNode = result.value
 
@@ -76,6 +89,12 @@ const writeCbor = async (ipfs, obj, options) => {
 }
 
 const readCbor = async (ipfs, cid, options) => {
+  if (options.localResolve) {
+    const haveLocally = await isLocal(ipfs, cid)
+    if (!haveLocally) {
+      return
+    }
+  }
   const result = await ipfs.dag.get(cid)
   const obj = result.value
   const links = options.links || []
