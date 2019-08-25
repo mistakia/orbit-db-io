@@ -111,11 +111,13 @@ const formats = {
   'raw': { write: writeObj }
 }
 
-const write = (ipfs, codec, obj, options = {}) => {
+const write = async (ipfs, codec, obj, options = {}) => {
   const format = formats[codec]
   if (!format) throw new Error('Unsupported codec')
 
-  return format.write(ipfs, obj, options)
+  const cid = await format.write(ipfs, obj, options)
+  if (options.pin) await ipfs.pin.add(cid)
+  return cid
 }
 
 const read = (ipfs, cid, options = {}) => {
