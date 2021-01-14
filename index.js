@@ -2,12 +2,7 @@ const CID = require('cids')
 const dagPB = require('ipld-dag-pb')
 const defaultBase = 'base58btc'
 
-const isLocal = (ipfs, cid) => new Promise((resolve, reject) => {
-  ipfs._repo.blocks.has(cid, (err, exists) => {
-    if (err) reject(err)
-    resolve(exists)
-  })
-})
+const isLocal = async (ipfs, cid) => ipfs.repo.has(cid)
 
 const cidifyString = (str) => {
   if (!str) {
